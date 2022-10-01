@@ -17,7 +17,7 @@
 // basic usage
 //
 static void usage() {
-  fprintf(stderr, "Usage: genmistsky [-h] [-n=<nlayers>] [-unif] [-z=<low alt>] [+z=<high alt>]\n");
+  fprintf(stderr, "Usage: genmistsky [-h] [-n=<nlayers>] [-unif] [-z=<low alt>] [+z=<high alt>] [-ms=<mie scale>]\n");
   exit(1);
 }
 
@@ -34,7 +34,9 @@ int main(int argc, char *argv[]) {
 
   // layers start and end at these altitudes
   double bottom_alt = -300.0;	// meters (Dead Sea is -300m)
-  double top_alt = 20000.0;		// meters (Mt. Everest is 8848m)
+  double top_alt = 10000.0;		// meters (Mt. Everest is 8848m)
+
+  double mie_relative_density = 0.1;	// will scale by air density
 
   // toggle the layers
   const bool do_rayleigh = true;
@@ -44,18 +46,23 @@ int main(int argc, char *argv[]) {
   for (int i=1; i<argc; i++) {
     if (strncmp(argv[i], "-n=", 3) == 0) {
       int num = atoi(argv[i]+3);
-      if (num < 1) usage();
+      if (num < 1) { std::cerr << "Need at least 1 layer!\n"; usage(); }
+      if (num > 1000) { std::cerr << "Too many layers!\n"; usage(); }
       num_rayleigh_layers = num;
     } else if (strncmp(argv[i], "-z=", 3) == 0) {
       double alt = atof(argv[i]+3);
       bottom_alt = alt;
     } else if (strncmp(argv[i], "+z=", 3) == 0) {
       double alt = atoi(argv[i]+3);
-      if (alt < bottom_alt) usage();
+      if (alt < bottom_alt) { std::cerr << "Top layer is below bottom layer!\n"; usage(); }
       top_alt = alt;
     } else if (strncmp(argv[i], "-unif", 5) == 0) {
       // use uniformly-thick layers (better for images from space)
       layers_by_density = false;
+    } else if (strncmp(argv[i], "-ms", 3) == 0) {
+      double scale = atoi(argv[i]+3);
+      if (scale <= 0.0) { std::cerr << "Mie scale can't be negative!\n"; usage(); }
+      mie_relative_density = scale;
     } else if (strncmp(argv[i], "-h", 2) == 0 or strncmp(argv[i], "--h", 3) == 0) {
       usage();
     }
@@ -82,7 +89,6 @@ int main(int argc, char *argv[]) {
   // Mie scattering is from clouds, aerosols, and large particles
   // fairly independent of color, strongly forward-scattered, some absorption
   const int num_mie_layers = num_rayleigh_layers - 1;
-  const double mie_relative_density = 0.1;	// will scale by air density
   const double mie_albedo = 0.95;			// total albedo
   const double mie_hgconst = 0.5;
   const double mie_per_layer = 1.0 - (1.0-mie_albedo) / num_mie_layers;
