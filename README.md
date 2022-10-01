@@ -16,6 +16,8 @@ The last command will generate the Earth and some `mist` volumes and render a vi
 ## Details
 Rayleigh scattering (from gas molecules) is the primary source of the sky's color; Mie scattering (from larger particles such as dust and water droplets) serves to spread the sun's rays into a halo, and refraction (due to density changes) causes very low-angle sun rays to curve. The combination of these three effects can be simulated in Radiance with `mist` and `interface` materials applied to Earth-sized `sphere` and `bubble` geometry.
 
+This program assumes that the scene is centered around (0,0,0) with East along positive x, North toward positive y, up along positive z, and all spatial units in meters. The center of the Earth (and of all atmospheric shells) is (0,0,-6378100).
+
 It it important to note that this code does not specify the sun's direction, nor does it provide the `bubble` that is necessary if the view point is inside of one of the mist volumes. The user is responsible for those.
 
 ## Thanks
