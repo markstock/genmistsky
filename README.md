@@ -20,5 +20,7 @@ This program assumes that the scene is centered around (0,0,0) with East along p
 
 It it important to note that this code does not specify the sun's direction, nor does it provide the `bubble` that is necessary if the view point is inside of one of the mist volumes. The user is responsible for those.
 
+![rendering of dawn](media/img43_cropsm.png?raw=true "Rendering of South-Central Colorado at dawn")
+
 ## Thanks
 The original idea for modeling skies in Radiance came from [Taoning Wang's post](https://discourse.radiance-online.org/t/notes-on-misty-sky/6007/) on the Radiance Discourse server. The [standard atmosphere code](https://apps.dtic.mil/sti/pdfs/ADA588839.pdf) is from R.J. Yager. [Radiance](https://floyd.lbl.gov/radiance/) is a lighting simulation package created by Greg Ward.
