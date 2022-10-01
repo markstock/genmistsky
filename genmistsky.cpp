@@ -17,7 +17,7 @@
 // basic usage
 //
 static void usage() {
-  fprintf(stderr, "Usage: genmistsky [-h] [-n=<nlayers>] [-z=<low alt>] [+z=<high alt>]\n");
+  fprintf(stderr, "Usage: genmistsky [-h] [-n=<nlayers>] [-unif] [-z=<low alt>] [+z=<high alt>]\n");
   exit(1);
 }
 
@@ -28,6 +28,9 @@ int main(int argc, char *argv[]) {
 
   // number of geometric layers
   int num_rayleigh_layers = 10;
+
+  // set layers by density or by thickness
+  bool layers_by_density = true;
 
   // layers start and end at these altitudes
   double bottom_alt = -300.0;	// meters (Dead Sea is -300m)
@@ -50,6 +53,9 @@ int main(int argc, char *argv[]) {
       double alt = atoi(argv[i]+3);
       if (alt < bottom_alt) usage();
       top_alt = alt;
+    } else if (strncmp(argv[i], "-unif", 5) == 0) {
+      // use uniformly-thick layers (better for images from space)
+      layers_by_density = false;
     } else if (strncmp(argv[i], "-h", 2) == 0 or strncmp(argv[i], "--h", 3) == 0) {
       usage();
     }
@@ -110,21 +116,26 @@ int main(int argc, char *argv[]) {
   const double rho_bottom = yAtmosphere::Density(bottom_alt);
   const double rho_top = yAtmosphere::Density(top_alt);
   const double rho_per_layer = (rho_bottom-rho_top)/num_rayleigh_layers;
+  const double m_per_layer = (top_alt-bottom_alt)/num_rayleigh_layers;
 
   // find altitudes for each band
   std::vector<double> layer_alts(num_rayleigh_layers+1);
   layer_alts[0] = bottom_alt;
   layer_alts[num_rayleigh_layers] = top_alt;
   for (int ilayer=1; ilayer<num_rayleigh_layers; ++ilayer) {
-    const double this_dens = rho_bottom - ilayer*rho_per_layer;
-    //std::cout << "looking for altitude with rho=" << this_dens << " ... ";
 
-    // start at last alt and march up
-    double test_alt = layer_alts[ilayer-1];
-    while (yAtmosphere::Density(test_alt) > this_dens) test_alt += 1.0;
-    layer_alts[ilayer] = test_alt;
+    if (layers_by_density) {
+      const double this_dens = rho_bottom - ilayer*rho_per_layer;
 
-    //std::cout << test_alt << "m\n";
+      // start at last alt and march up
+      double test_alt = layer_alts[ilayer-1];
+      while (yAtmosphere::Density(test_alt) > this_dens) test_alt += 1.0;
+      layer_alts[ilayer] = test_alt;
+
+    } else {
+      // layers are uniformly-spaced
+      layer_alts[ilayer] = std::floor(bottom_alt + ilayer*m_per_layer + 0.5);
+    }
   }
 
 
