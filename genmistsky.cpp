@@ -106,20 +106,21 @@ int main(int argc, char *argv[]) {
   const double ior_per_layer = (total_ior-1.0)/num_refract_layers;
 
 
-  std::cerr << "# writing earth and mist sky layers\n";
-  std::cerr << "# make sure to change the \"solar source sun\" below\n";
-  std::cerr << "# and include the appropriate \"bubble\" around the view point\n\n";
+  std::cerr << "# define earth and atmosphere layers as mist materials\n";
+  std::cerr << "# make sure to run getsunvec or create a \"solar source sun\" before including this file\n";
+  std::cerr << "# also create a \"bubble\" around the view point and nearby objects\n\n";
+
+  std::cout << std::defaultfloat;
+  std::cout << "# getsunvec 12 15 14.5EST -a 42.36 -o 71.06 will create something like this:\n";
+  std::cout << "#void light solar 0 0 3 " << sun_radiance << " " << sun_radiance << " " << sun_radiance << " " << "\n";
+  std::cout << "#solar source sun 0 0 4 -0.622341 -0.7473 0.232884 0.5414\n";
+  std::cout << "\n";
 
   // write the globe, use something close to mean albedo
   std::cout << std::fixed;
+  std::cout << "# earth as a sphere, average albedo, surface at z=0 (put any geometry above this)\n";
   std::cout << "void plastic ec 0 0 5 0.2 0.2 0.2 0 0\n";
   std::cout << "ec sphere earth 0 0 4 0 0 " << -earth_rad << " " << earth_rad << "\n";
-  std::cout << "\n";
-
-  std::cout << std::defaultfloat;
-  std::cout << "# run something like 'getsunvec 12 15 14.5EST -a 42.36 -o 71.06' to get a sun\n";
-  std::cout << "#void light solar 0 0 3 " << sun_radiance << " " << sun_radiance << " " << sun_radiance << " " << "\n";
-  std::cout << "#solar source sun 0 0 4 -0.622341 -0.7473 0.232884 0.5414\n";
   std::cout << "\n";
 
 
