@@ -17,7 +17,7 @@
 // basic usage
 //
 static void usage() {
-  fprintf(stderr, "Usage: genmistsky [-h] [-n=<nlayers>] [-unif] [-z=<low alt>] [+z=<high alt>] [-ms=<mie scale>]\n");
+  fprintf(stderr, "Usage: genmistsky [-h] [-n=<nlayers>] [-unif] [-z=<low alt>] [+z=<high alt>] [-ms=<mie scale>] [-r]\n");
   exit(1);
 }
 
@@ -36,12 +36,13 @@ int main(int argc, char *argv[]) {
   double bottom_alt = -300.0;	// meters (Dead Sea is -300m)
   double top_alt = 10000.0;		// meters (Mt. Everest is 8848m)
 
-  double mie_relative_density = 0.1;	// will scale by air density
+  // 0.1 is a very clear sky, 1.0 is more standard
+  double mie_relative_density = 0.5;	// will scale by air density
 
   // toggle the layers
   const bool do_rayleigh = true;
   const bool do_mie = true;
-  const bool do_refract = false;
+  bool do_refract = false;
 
   for (int i=1; i<argc; i++) {
     if (strncmp(argv[i], "-n=", 3) == 0) {
@@ -59,10 +60,12 @@ int main(int argc, char *argv[]) {
     } else if (strncmp(argv[i], "-unif", 5) == 0) {
       // use uniformly-thick layers (better for images from space)
       layers_by_density = false;
-    } else if (strncmp(argv[i], "-ms", 3) == 0) {
-      double scale = atoi(argv[i]+3);
+    } else if (strncmp(argv[i], "-ms=", 3) == 0) {
+      double scale = atof(argv[i]+4);
       if (scale <= 0.0) { std::cerr << "Mie scale can't be negative!\n"; usage(); }
       mie_relative_density = scale;
+    } else if (strncmp(argv[i], "-r", 2) == 0) {
+      do_refract = true;
     } else if (strncmp(argv[i], "-h", 2) == 0 or strncmp(argv[i], "--h", 3) == 0) {
       usage();
     }
@@ -71,8 +74,9 @@ int main(int argc, char *argv[]) {
 
   // set the parameters
 
-  // write sun brightness and direction
-  const double sun_radiance = 10026204.;	// units?
+  // sun radiance in W/sr/m^2 per band (rgb)
+  //const double sun_radiance = 10026204.;	// from ???
+  const double sun_radiance = 2640133.;	// from notes in genutahsky.c
 
   // write Earth
   const double earth_rad = 6378100;	// meters
@@ -106,13 +110,16 @@ int main(int argc, char *argv[]) {
   std::cerr << "# make sure to change the \"solar source sun\" below\n";
   std::cerr << "# and include the appropriate \"bubble\" around the view point\n\n";
 
-  // write the first stuff
-  std::cout << "void plastic ec 0 0 5 0.1 0.1 0.1 0 0\n";
+  // write the globe, use something close to mean albedo
+  std::cout << std::fixed;
+  std::cout << "void plastic ec 0 0 5 0.2 0.2 0.2 0 0\n";
   std::cout << "ec sphere earth 0 0 4 0 0 " << -earth_rad << " " << earth_rad << "\n";
   std::cout << "\n";
 
-  std::cout << "void light solar 0 0 3 " << sun_radiance << " " << sun_radiance << " " << sun_radiance << " " << "\n";
-  std::cout << "solar source sun 0 0 4 x y z 0.533\n";
+  std::cout << std::defaultfloat;
+  std::cout << "# run something like 'getsunvec 12 15 14.5EST -a 42.36 -o 71.06' to get a sun\n";
+  std::cout << "#void light solar 0 0 3 " << sun_radiance << " " << sun_radiance << " " << sun_radiance << " " << "\n";
+  std::cout << "#solar source sun 0 0 4 -0.622341 -0.7473 0.232884 0.5414\n";
   std::cout << "\n";
 
 
@@ -145,7 +152,7 @@ int main(int argc, char *argv[]) {
   }
 
 
-  // write alternating layers of: Rayleigh mist, Mie mist, refraction interface
+  // write repeating layers of: Rayleigh mist, Mie mist, refraction interface
 
   for (int ilayer=0; ilayer<num_rayleigh_layers; ++ilayer) {
 
@@ -203,8 +210,10 @@ int main(int argc, char *argv[]) {
     // mie layer (always 1m)
   }
 
+  int suggested_n = num_rayleigh_layers*(do_refract ? 5 : 4);
+  suggested_n = 8*(1 + suggested_n/8);
   std::cerr << "# Suggest generating the octree with optional parameters:\n";
-  std::cerr << "#     oconv -n 32 -r 10000000 this.rad > scene.oct\n";
+  std::cerr << "#     oconv -n " << suggested_n << " -r 10000000 this.rad > scene.oct\n";
 
   return 0;
 }
