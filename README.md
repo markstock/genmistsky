@@ -22,5 +22,10 @@ It it important to note that this code does not specify the sun's direction, nor
 
 ![rendering of dawn](media/img43_cropsm.png?raw=true "Rendering of South-Central Colorado at dawn")
 
+## To Do
+* Consider adjusting the top-of-atmosphere color such that a grey object at the Earth's surface is really achromatic.
+* Generate rendering samples: of a standard scene at Earth's surface but with varying Mie coefficients, the same but with different numbers of layers, the same but at different altitudes.
+* Add option to load image of Earth lights at night, correlate them to viewer's location, and apply them as area light sources on the ground in order to allow distant cities to add horizon-glow realistically.
+
 ## Thanks
 The original idea for modeling skies in Radiance came from [Taoning Wang's post](https://discourse.radiance-online.org/t/notes-on-misty-sky/6007/) on the Radiance Discourse server. The [standard atmosphere code](https://apps.dtic.mil/sti/pdfs/ADA588839.pdf) is from R.J. Yager. [Radiance](https://floyd.lbl.gov/radiance/) is a lighting simulation package created by Greg Ward.
