@@ -4,13 +4,14 @@
  *
  * Idea from Taoning Wang https://discourse.radiance-online.org/t/notes-on-misty-sky/6007/
  * Atmosphere from yagenaut@gmail.com, 2013-03-15
- * (c)2022 Mark J. Stock <markjstock@gmail.com>
+ * (c)2022-3 Mark J. Stock <markjstock@gmail.com>
  */
 
 #include "y_atmosphere.h"
 
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 
 //
@@ -106,9 +107,9 @@ int main(int argc, char *argv[]) {
   const double ior_per_layer = (total_ior-1.0)/num_refract_layers;
 
 
-  std::cerr << "# define earth and atmosphere layers as mist materials\n";
-  std::cerr << "# make sure to run getsunvec or create a \"solar source sun\" before including this file\n";
-  std::cerr << "# also create a \"bubble\" around the view point and nearby objects\n\n";
+  std::cout << "# define earth and atmosphere layers as mist materials\n";
+  std::cout << "# make sure to run getsunvec or create a \"solar source sun\" before including this file\n";
+  std::cout << "# also create a \"bubble\" around the view point and nearby objects\n\n";
 
   std::cout << std::defaultfloat;
   std::cout << "# getsunvec 12 15 14.5EST -a 42.36 -o 71.06 will create something like this:\n";
@@ -117,10 +118,9 @@ int main(int argc, char *argv[]) {
   std::cout << "\n";
 
   // write the globe, use something close to mean albedo
-  std::cout << std::fixed;
   std::cout << "# earth as a sphere, average albedo, surface at z=0 (put any geometry above this)\n";
   std::cout << "void plastic ec 0 0 5 0.2 0.2 0.2 0 0\n";
-  std::cout << "ec sphere earth 0 0 4 0 0 " << -earth_rad << " " << earth_rad << "\n";
+  std::cout << "ec sphere earth 0 0 4 0 0 " << std::fixed << std::setprecision(1) << -earth_rad << " " << earth_rad << "\n";
   std::cout << "\n";
 
 
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
     const double lowrad = earth_rad + low;
     const double hirad = earth_rad + hih;
 
-    std::cout << std::defaultfloat;
+    std::cout << std::fixed << std::setprecision(1);
     std::cout << "# layer " << ilayer << " covers " << low << " to " << hih << " meters ASL\n\n";
 
     // mean relative density for this layer
@@ -175,11 +175,11 @@ int main(int argc, char *argv[]) {
       // adjust for being slightly thinner
       const double this_dens = dens * thick / (thick-4.0);
 
-      std::cout << std::defaultfloat;
+      std::cout << std::defaultfloat << std::setprecision(8);
       std::cout << "void mist atmo" << ilayer << " 1 sun 0 7 " << rayleigh_volum_red*this_dens << " " << rayleigh_volum_grn*this_dens << " " << rayleigh_volum_blu*this_dens << " " << rayleigh_albedo << " " << rayleigh_albedo << " " << rayleigh_albedo << " " << rayleigh_hgconst << "\n";
       std::cout << std::fixed;
-      std::cout << "atmo" << ilayer << " bubble inner" << ilayer << " 0 0 4 0 0 " << -earth_rad << " " << lowrad << "\n";
-      std::cout << "atmo" << ilayer << " sphere outer" << ilayer << " 0 0 4 0 0 " << -earth_rad << " " << hirad-4.0 << "\n";
+      std::cout << "atmo" << ilayer << " bubble inner" << ilayer << " 0 0 4 0 0 " << std::fixed << std::setprecision(1) << -earth_rad << " " << lowrad << "\n";
+      std::cout << "atmo" << ilayer << " sphere outer" << ilayer << " 0 0 4 0 0 " << std::fixed << std::setprecision(1) << -earth_rad << " " << hirad-4.0 << "\n";
       std::cout << "\n";
     }
 
@@ -188,11 +188,10 @@ int main(int argc, char *argv[]) {
       // must scale up because thickness is only 1m!
       const double this_dens = mie_relative_density * dens * rayleigh_volum_grn * thick;
 
-      std::cout << std::defaultfloat;
+      std::cout << std::defaultfloat << std::setprecision(8);
       std::cout << "void mist miemat" << ilayer << " 1 sun 0 7 " << this_dens << " " << this_dens << " " << this_dens << " " << mie_per_layer << " " << mie_per_layer << " " << mie_per_layer << " " << mie_hgconst << "\n";
-      std::cout << std::fixed;
-      std::cout << "miemat" << ilayer << " bubble inner" << ilayer << " 0 0 4 0 0 " << -earth_rad << " " << hirad-2.0 << "\n";
-      std::cout << "miemat" << ilayer << " sphere outer" << ilayer << " 0 0 4 0 0 " << -earth_rad << " " << hirad-1.0 << "\n";
+      std::cout << "miemat" << ilayer << " bubble inner" << ilayer << " 0 0 4 0 0 " << std::fixed << std::setprecision(1) << -earth_rad << " " << hirad-2.0 << "\n";
+      std::cout << "miemat" << ilayer << " sphere outer" << ilayer << " 0 0 4 0 0 " << std::fixed << std::setprecision(1) << -earth_rad << " " << hirad-1.0 << "\n";
       std::cout << "\n";
     }
 
@@ -201,10 +200,10 @@ int main(int argc, char *argv[]) {
       const double n_low = total_ior - ilayer*ior_per_layer;
       const double n_high = total_ior - (ilayer+1)*ior_per_layer;
 
-      std::cout << std::defaultfloat;
+      std::cout << std::defaultfloat << std::setprecision(8);
       std::cout << "void interface refr" << ilayer << " 0 0 8 1 1 1 " << n_low << " 1 1 1 " << n_high << "\n";
       std::cout << std::fixed;
-      std::cout << "refr" << ilayer << " sphere bendy" << ilayer << " 0 0 4 0 0 " << -earth_rad << " " << hirad-3.0 << "\n";
+      std::cout << "refr" << ilayer << " sphere bendy" << ilayer << " 0 0 4 0 0 " << std::fixed << std::setprecision(1) << -earth_rad << " " << hirad-3.0 << "\n";
       std::cout << "\n";
     }
 
@@ -213,8 +212,8 @@ int main(int argc, char *argv[]) {
 
   int suggested_n = num_rayleigh_layers*(do_refract ? 5 : 4);
   suggested_n = 8*(1 + suggested_n/8);
-  std::cerr << "# Suggest generating the octree with optional parameters:\n";
-  std::cerr << "#     oconv -n " << suggested_n << " -r 10000000 this.rad > scene.oct\n";
+  std::cout << "# Suggest generating the octree with optional parameters:\n";
+  std::cout << "#     oconv -n " << suggested_n << " -r 10000000 this.rad > scene.oct\n";
 
   return 0;
 }
