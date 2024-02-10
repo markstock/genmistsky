@@ -29,3 +29,14 @@ It it important to note that this code does not specify the sun's direction, nor
 
 ## Thanks
 The original idea for modeling skies in Radiance came from [Taoning Wang's post](https://discourse.radiance-online.org/t/notes-on-misty-sky/6007/) on the Radiance Discourse server. The [standard atmosphere code](https://apps.dtic.mil/sti/pdfs/ADA588839.pdf) is from R.J. Yager. [Radiance](https://floyd.lbl.gov/radiance/) is a lighting simulation package created by Greg Ward.
+
+## Citing Genmistsky
+I don't get paid for writing or maintaining this, so if you find this tool useful or mention it in your writing, please please cite it by using the following BibTeX entry.
+```
+@Misc{Genmistsky2022,
+  author =       {Mark J.~Stock},
+  title =        {Genmistsky: Generate a multi-layered participating atmosphere for Radiance},
+  howpublished = {\url{https://github.com/markstock/genmistsky}},
+  year =         {2022}
+}
+```
